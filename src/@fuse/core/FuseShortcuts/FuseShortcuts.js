@@ -36,7 +36,7 @@ const useStyles = makeStyles({
 
 function FuseShortcuts(props) {
   const dispatch = useDispatch();
-  const shortcuts = useSelector(({ auth }) => auth.user.data.shortcuts);
+  const shortcuts = useSelector(({ auth }) => auth.user.userSettings.shortcuts);
   const navigation = useSelector(selectFlatNavigation);
 
   const classes = useStyles(props);
@@ -47,7 +47,7 @@ function FuseShortcuts(props) {
   const shortcutItems = shortcuts
     ? shortcuts.map((id) => navigation.find((item) => item.id === id))
     : [];
-
+  console.log(shortcutItems);
   function addMenuClick(event) {
     setAddMenu(event.currentTarget);
   }
@@ -63,7 +63,9 @@ function FuseShortcuts(props) {
 
     if (newSearchText.length !== 0 && navigation) {
       setSearchResults(
-        navigation.filter((item) => item.title.toLowerCase().includes(newSearchText.toLowerCase()))
+        navigation.filter((item) =>
+          item.title.toLowerCase().includes(newSearchText.toLowerCase())
+        )
       );
       return;
     }
@@ -86,7 +88,9 @@ function FuseShortcuts(props) {
             {item.icon ? (
               <Icon>{item.icon}</Icon>
             ) : (
-              <span className="text-20 font-semibold uppercase text-center">{item.title[0]}</span>
+              <span className="text-20 font-semibold uppercase text-center">
+                {item.title[0]}
+              </span>
             )}
           </ListItemIcon>
           <ListItemText primary={item.title} />
@@ -97,7 +101,9 @@ function FuseShortcuts(props) {
               onToggle(item.id);
             }}
           >
-            <Icon color="action">{shortcuts.includes(item.id) ? 'star' : 'star_border'}</Icon>
+            <Icon color="action">
+              {shortcuts.includes(item.id) ? 'star' : 'star_border'}
+            </Icon>
           </IconButton>
         </MenuItem>
       </Link>
@@ -130,21 +136,35 @@ function FuseShortcuts(props) {
         variants={container}
         initial="hidden"
         animate="show"
-        className={clsx('flex flex-1', props.variant === 'vertical' && 'flex-col')}
+        className={clsx(
+          'flex flex-1',
+          props.variant === 'vertical' && 'flex-col'
+        )}
       >
         {shortcutItems.map(
           (_item) =>
             _item && (
-              <Link to={_item.url} key={_item.id} className={classes.item} role="button">
+              <Link
+                to={_item.url}
+                key={_item.id}
+                className={classes.item}
+                role="button"
+              >
                 <Tooltip
                   title={_item.title}
                   placement={props.variant === 'horizontal' ? 'bottom' : 'left'}
                 >
-                  <IconButton className="w-40 h-40 p-0" component={motion.div} variants={item}>
+                  <IconButton
+                    className="w-40 h-40 p-0"
+                    component={motion.div}
+                    variants={item}
+                  >
                     {_item.icon ? (
                       <Icon>{_item.icon}</Icon>
                     ) : (
-                      <span className="text-20 font-semibold uppercase">{_item.title[0]}</span>
+                      <span className="text-20 font-semibold uppercase">
+                        {_item.title[0]}
+                      </span>
                     )}
                   </IconButton>
                 </Tooltip>

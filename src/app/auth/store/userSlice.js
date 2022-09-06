@@ -4,7 +4,10 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 import history from '@history';
 import _ from '@lodash';
-import { setInitialSettings, setDefaultSettings } from 'app/store/fuse/settingsSlice';
+import {
+  setInitialSettings,
+  setDefaultSettings,
+} from 'app/store/fuse/settingsSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import auth0Service from 'app/services/auth0Service';
 import firebaseService from 'app/services/firebaseService';
@@ -49,30 +52,31 @@ export const setUserDataFirebase = (user, authUser) => async (dispatch) => {
   return dispatch(createUserSettingsFirebase(authUser));
 };
 
-export const createUserSettingsFirebase = (authUser) => async (dispatch, getState) => {
-  const guestUser = getState().auth.user;
-  const fuseDefaultSettings = getState().fuse.settings.defaults;
-  const { currentUser } = firebase.auth();
+export const createUserSettingsFirebase =
+  (authUser) => async (dispatch, getState) => {
+    const guestUser = getState().auth.user;
+    const fuseDefaultSettings = getState().fuse.settings.defaults;
+    const { currentUser } = firebase.auth();
 
-  /**
-   * Merge with current Settings
-   */
-  const user = _.merge({}, guestUser, {
-    uid: authUser.uid,
-    from: 'firebase',
-    role: ['admin'],
-    data: {
-      displayName: authUser.displayName,
-      email: authUser.email,
-      settings: { ...fuseDefaultSettings },
-    },
-  });
-  currentUser.updateProfile(user.data);
+    /**
+     * Merge with current Settings
+     */
+    const user = _.merge({}, guestUser, {
+      uid: authUser.uid,
+      from: 'firebase',
+      role: ['admin'],
+      data: {
+        displayName: authUser.displayName,
+        email: authUser.email,
+        settings: { ...fuseDefaultSettings },
+      },
+    });
+    currentUser.updateProfile(user.data);
 
-  dispatch(updateUserData(user));
+    dispatch(updateUserData(user));
 
-  return dispatch(setUserData(user));
-};
+    return dispatch(setUserData(user));
+  };
 
 export const setUserData = (user) => async (dispatch, getState) => {
   /*
@@ -80,40 +84,42 @@ export const setUserData = (user) => async (dispatch, getState) => {
          */
 
   history.location.state = {
-    redirectUrl: user.redirectUrl, // for example 'apps/academy'
+    // redirectUrl: user.redirectUrl, // for example 'apps/academy'
+    redirectUrl: '/apps/dashboard', // for example 'apps/academy'
   };
 
   /*
     Set User Settings
      */
-  dispatch(setDefaultSettings(user.data.settings));
+  dispatch(setDefaultSettings(user.userSettings));
 
   dispatch(setUser(user));
 };
 
 export const updateUserSettings = (settings) => async (dispatch, getState) => {
   const oldUser = getState().auth.user;
-  const user = _.merge({}, oldUser, { data: { settings } });
+  const user = _.merge({}, oldUser, { userSettings: { settings } });
 
   dispatch(updateUserData(user));
 
   return dispatch(setUserData(user));
 };
 
-export const updateUserShortcuts = (shortcuts) => async (dispatch, getState) => {
-  const { user } = getState().auth;
-  const newUser = {
-    ...user,
-    data: {
-      ...user.data,
-      shortcuts,
-    },
+export const updateUserShortcuts =
+  (shortcuts) => async (dispatch, getState) => {
+    const { user } = getState().auth;
+    const newUser = {
+      ...user,
+      data: {
+        ...user.data,
+        shortcuts,
+      },
+    };
+
+    dispatch(updateUserData(user));
+
+    return dispatch(setUserData(newUser));
   };
-
-  dispatch(updateUserData(user));
-
-  return dispatch(setUserData(newUser));
-};
 
 export const logoutUser = () => async (dispatch, getState) => {
   const { user } = getState().auth;
@@ -193,10 +199,39 @@ export const updateUserData = (user) => async (dispatch, getState) => {
 
 const initialState = {
   role: [], // guest
-  data: {
-    displayName: 'John Doe',
-    photoURL: 'assets/images/avatars/Velazquez.jpg',
-    email: 'johndoe@withinpixels.com',
+  name: 'guest',
+  email: 'johndoe@withinpixels.com',
+  photoURL: 'assets/images/avatars/Velazquez.jpg',
+  userSettings: {
+    layout: {
+      style: 'layout1',
+      config: {
+        scroll: 'content',
+        navbar: {
+          display: true,
+          folded: true,
+          position: 'left',
+        },
+        toolbar: {
+          display: true,
+          style: 'fixed',
+          position: 'below',
+        },
+        footer: {
+          display: true,
+          style: 'fixed',
+          position: 'below',
+        },
+        mode: 'fullwidth',
+      },
+    },
+    customScrollbars: true,
+    theme: {
+      main: 'defaultDark',
+      navbar: 'defaultDark',
+      toolbar: 'defaultDark',
+      footer: 'defaultDark',
+    },
     shortcuts: ['calendar', 'mail', 'contacts', 'todo'],
   },
 };

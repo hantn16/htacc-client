@@ -3,8 +3,11 @@ import FuseUtils from '@fuse/utils';
 import ExampleConfig from 'app/main/example/ExampleConfig';
 import FuseLoading from '@fuse/core/FuseLoading';
 import Error404Page from 'app/main/404/Error404Page';
+import LoginConfig from 'app/main/login/LoginConfig';
+import Register from 'app/main/register/Register';
+import appsConfigs from 'app/main/apps/appsConfigs';
 
-const routeConfigs = [ExampleConfig];
+const routeConfigs = [...appsConfigs, ExampleConfig, LoginConfig];
 
 const routes = [
   // if you want to make whole app auth protected by default change defaultAuth for example:
@@ -14,7 +17,19 @@ const routes = [
   {
     exact: true,
     path: '/',
-    component: () => <Redirect to="/example" />,
+    component: () => <Redirect to="/apps/dashboard" />,
+  },
+  {
+    path: '/404',
+    component: () => <Error404Page />,
+  },
+  // {
+  //   path: '/login',
+  //   component: () => <Login />,
+  // },
+  {
+    path: '/register',
+    component: () => <Register />,
   },
   {
     path: '/loading',
@@ -22,11 +37,7 @@ const routes = [
     component: () => <FuseLoading />,
   },
   {
-    path: '/404',
-    component: () => <Error404Page />,
-  },
-  {
-    component: () => <Redirect to="/404" />,
+    component: () => <Redirect to="/" />,
   },
 ];
 
