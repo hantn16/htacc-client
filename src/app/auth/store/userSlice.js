@@ -4,10 +4,7 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 import history from '@history';
 import _ from '@lodash';
-import {
-  setInitialSettings,
-  setDefaultSettings,
-} from 'app/store/fuse/settingsSlice';
+import { setInitialSettings, setDefaultSettings } from 'app/store/fuse/settingsSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import auth0Service from 'app/services/auth0Service';
 import firebaseService from 'app/services/firebaseService';
@@ -52,31 +49,30 @@ export const setUserDataFirebase = (user, authUser) => async (dispatch) => {
   return dispatch(createUserSettingsFirebase(authUser));
 };
 
-export const createUserSettingsFirebase =
-  (authUser) => async (dispatch, getState) => {
-    const guestUser = getState().auth.user;
-    const fuseDefaultSettings = getState().fuse.settings.defaults;
-    const { currentUser } = firebase.auth();
+export const createUserSettingsFirebase = (authUser) => async (dispatch, getState) => {
+  const guestUser = getState().auth.user;
+  const fuseDefaultSettings = getState().fuse.settings.defaults;
+  const { currentUser } = firebase.auth();
 
-    /**
-     * Merge with current Settings
-     */
-    const user = _.merge({}, guestUser, {
-      uid: authUser.uid,
-      from: 'firebase',
-      role: ['admin'],
-      data: {
-        displayName: authUser.displayName,
-        email: authUser.email,
-        settings: { ...fuseDefaultSettings },
-      },
-    });
-    currentUser.updateProfile(user.data);
+  /**
+   * Merge with current Settings
+   */
+  const user = _.merge({}, guestUser, {
+    uid: authUser.uid,
+    from: 'firebase',
+    role: ['admin'],
+    data: {
+      displayName: authUser.displayName,
+      email: authUser.email,
+      settings: { ...fuseDefaultSettings },
+    },
+  });
+  currentUser.updateProfile(user.data);
 
-    dispatch(updateUserData(user));
+  dispatch(updateUserData(user));
 
-    return dispatch(setUserData(user));
-  };
+  return dispatch(setUserData(user));
+};
 
 export const setUserData = (user) => async (dispatch, getState) => {
   /*
@@ -105,21 +101,20 @@ export const updateUserSettings = (settings) => async (dispatch, getState) => {
   return dispatch(setUserData(user));
 };
 
-export const updateUserShortcuts =
-  (shortcuts) => async (dispatch, getState) => {
-    const { user } = getState().auth;
-    const newUser = {
-      ...user,
-      data: {
-        ...user.data,
-        shortcuts,
-      },
-    };
-
-    dispatch(updateUserData(user));
-
-    return dispatch(setUserData(newUser));
+export const updateUserShortcuts = (shortcuts) => async (dispatch, getState) => {
+  const { user } = getState().auth;
+  const newUser = {
+    ...user,
+    data: {
+      ...user.data,
+      shortcuts,
+    },
   };
+
+  dispatch(updateUserData(user));
+
+  return dispatch(setUserData(newUser));
+};
 
 export const logoutUser = () => async (dispatch, getState) => {
   const { user } = getState().auth;

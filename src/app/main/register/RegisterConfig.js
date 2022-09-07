@@ -1,3 +1,6 @@
+import { authRoles } from 'app/auth';
+import Register from './Register';
+
 const RegisterConfig = {
   settings: {
     layout: {
