@@ -13,6 +13,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import { makeStyles } from '@material-ui/core/styles';
 import { darken } from '@material-ui/core/styles/colorManipulator';
 import TextField from '@material-ui/core/TextField';
@@ -22,17 +23,16 @@ import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import * as yup from 'yup';
 import _ from '@lodash';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { submitLogin } from 'app/auth/store/loginSlice';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
   leftSection: {},
   rightSection: {
-    background: `linear-gradient(to right, ${theme.palette.primary.dark} 0%, ${darken(
-      theme.palette.primary.dark,
-      0.5
-    )} 100%)`,
+    background: `linear-gradient(to right, ${
+      theme.palette.primary.dark
+    } 0%, ${darken(theme.palette.primary.dark, 0.5)} 100%)`,
     color: theme.palette.primary.contrastText,
   },
 }));
@@ -41,7 +41,10 @@ const useStyles = makeStyles((theme) => ({
  * Form Validation Schema
  */
 const schema = yup.object().shape({
-  email: yup.string().email('You must enter a valid email').required('You must enter a email'),
+  email: yup
+    .string()
+    .email('You must enter a valid email')
+    .required('You must enter a email'),
   password: yup
     .string()
     .required('Please enter your password.')
@@ -57,6 +60,7 @@ const defaultValues = {
 function Login(props) {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const login = useSelector(({ auth }) => auth.login);
 
   const { control, formState, handleSubmit, reset } = useForm({
     mode: 'onChange',
@@ -68,7 +72,6 @@ function Login(props) {
   const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = (model) => {
-    // reset(defaultValues);
     dispatch(submitLogin(model));
   };
 
@@ -97,10 +100,17 @@ function Login(props) {
               animate={{ opacity: 1, transition: { delay: 0.2 } }}
             >
               <div className="flex items-center mb-48">
-                <img className="logo-icon w-48" src="assets/images/logos/fuse.svg" alt="logo" />
+                <img
+                  className="logo-icon w-48"
+                  src="assets/images/logos/fuse.svg"
+                  alt="logo"
+                />
                 <div className="border-l-1 mr-4 w-1 h-40" />
                 <div>
-                  <Typography className="text-24 font-semibold logo-text" color="inherit">
+                  <Typography
+                    className="text-24 font-semibold logo-text"
+                    color="inherit"
+                  >
                     HT
                   </Typography>
                   <Typography
@@ -155,7 +165,9 @@ function Login(props) {
                       type: showPassword ? 'text' : 'password',
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton onClick={() => setShowPassword(!showPassword)}>
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
                             <Icon className="text-20" color="action">
                               {showPassword ? 'visibility' : 'visibility_off'}
                             </Icon>
@@ -168,19 +180,29 @@ function Login(props) {
                   />
                 )}
               />
-
+              {Boolean(login.errors.length > 0) && (
+                <FormHelperText error>
+                  {login.errors.map((err) => err.message).join('\n')}
+                </FormHelperText>
+              )}
               <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between">
                 <Controller
                   name="remember"
                   control={control}
                   render={({ field }) => (
                     <FormControl>
-                      <FormControlLabel label="Remember Me" control={<Checkbox {...field} />} />
+                      <FormControlLabel
+                        label="Remember Me"
+                        control={<Checkbox {...field} />}
+                      />
                     </FormControl>
                   )}
                 />
 
-                <Link className="font-normal" to="/pages/auth/forgot-password-2">
+                <Link
+                  className="font-normal"
+                  to="/pages/auth/forgot-password-2"
+                >
                   Forgot Password?
                 </Link>
               </div>
@@ -203,11 +225,21 @@ function Login(props) {
               <Divider className="w-32" />
             </div>
 
-            <Button variant="outlined" color="primary" size="small" className="w-192 mb-8">
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              className="w-192 mb-8"
+            >
               Log in with Google
             </Button>
 
-            <Button variant="outlined" color="primary" size="small" className="w-192">
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              className="w-192"
+            >
               Log in with Facebook
             </Button>
           </CardContent>
@@ -244,9 +276,13 @@ function Login(props) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { delay: 0.3 } }}
             >
-              <Typography variant="subtitle1" color="inherit" className="mt-32 font-medium">
-                Powerful and professional admin template for Web Applications, CRM, CMS, Admin
-                Panels and more.
+              <Typography
+                variant="subtitle1"
+                color="inherit"
+                className="mt-32 font-medium"
+              >
+                Powerful and professional admin template for Web Applications,
+                CRM, CMS, Admin Panels and more.
               </Typography>
             </motion.div>
           </div>

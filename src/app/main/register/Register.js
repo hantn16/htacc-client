@@ -17,17 +17,17 @@ import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import * as yup from 'yup';
 import _ from '@lodash';
-import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { submitRegister } from 'app/auth/store/registerSlice';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
   leftSection: {},
   rightSection: {
-    background: `linear-gradient(to right, ${theme.palette.primary.dark} 0%, ${darken(
-      theme.palette.primary.dark,
-      0.5
-    )} 100%)`,
+    background: `linear-gradient(to right, ${
+      theme.palette.primary.dark
+    } 0%, ${darken(theme.palette.primary.dark, 0.5)} 100%)`,
     color: theme.palette.primary.contrastText,
   },
 }));
@@ -37,13 +37,20 @@ const useStyles = makeStyles((theme) => ({
  */
 const schema = yup.object().shape({
   name: yup.string().required('You must enter your name'),
-  email: yup.string().email('You must enter a valid email').required('You must enter a email'),
+  email: yup
+    .string()
+    .email('You must enter a valid email')
+    .required('You must enter a email'),
   password: yup
     .string()
     .required('Please enter your password.')
     .min(8, 'Password is too short - should be 8 chars minimum.'),
-  passwordConfirm: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match'),
-  acceptTermsConditions: yup.boolean().oneOf([true], 'The terms and conditions must be accepted.'),
+  passwordConfirm: yup
+    .string()
+    .oneOf([yup.ref('password'), null], 'Passwords must match'),
+  acceptTermsConditions: yup
+    .boolean()
+    .oneOf([true], 'The terms and conditions must be accepted.'),
 });
 
 const defaultValues = {
@@ -57,18 +64,25 @@ const defaultValues = {
 function Register() {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const authRegister = useSelector(({ auth }) => auth.register);
 
-  const { control, formState, handleSubmit, reset } = useForm({
+  const { control, formState, handleSubmit, reset, setError } = useForm({
     mode: 'onChange',
     defaultValues,
     resolver: yupResolver(schema),
   });
 
   const { isValid, dirtyFields, errors } = formState;
-
-  function onSubmit() {
-    reset(defaultValues);
-    dispatch(submitRegister);
+  useEffect(() => {
+    authRegister.errors.forEach((error) => {
+      setError(error.type, {
+        type: 'manual',
+        message: error.message,
+      });
+    });
+  }, [authRegister.errors, setError]);
+  function onSubmit(model) {
+    dispatch(submitRegister(model));
   }
 
   return (
@@ -96,10 +110,17 @@ function Register() {
               animate={{ opacity: 1, transition: { delay: 0.2 } }}
             >
               <div className="flex items-center mb-48">
-                <img className="logo-icon w-48" src="assets/images/logos/fuse.svg" alt="logo" />
+                <img
+                  className="logo-icon w-48"
+                  src="assets/images/logos/fuse.svg"
+                  alt="logo"
+                />
                 <div className="border-l-1 mr-4 w-1 h-40" />
                 <div>
-                  <Typography className="text-24 font-semibold logo-text" color="inherit">
+                  <Typography
+                    className="text-24 font-semibold logo-text"
+                    color="inherit"
+                  >
                     HT
                   </Typography>
                   <Typography
@@ -195,12 +216,17 @@ function Register() {
                 name="acceptTermsConditions"
                 control={control}
                 render={({ field }) => (
-                  <FormControl className="items-center" error={!!errors.acceptTermsConditions}>
+                  <FormControl
+                    className="items-center"
+                    error={!!errors.acceptTermsConditions}
+                  >
                     <FormControlLabel
                       label="I read and accept terms and conditions"
                       control={<Checkbox {...field} />}
                     />
-                    <FormHelperText>{errors?.acceptTermsConditions?.message}</FormHelperText>
+                    <FormHelperText>
+                      {errors?.acceptTermsConditions?.message}
+                    </FormHelperText>
                   </FormControl>
                 )}
               />
@@ -250,8 +276,13 @@ function Register() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { delay: 0.3 } }}
             >
-              <Typography variant="subtitle1" color="inherit" className="mt-32 font-medium">
-                Powerful and professional web application for Accounting and Management.
+              <Typography
+                variant="subtitle1"
+                color="inherit"
+                className="mt-32 font-medium"
+              >
+                Powerful and professional web application for Accounting and
+                Management.
               </Typography>
             </motion.div>
           </div>

@@ -16,7 +16,11 @@ class JwtService extends FuseUtils.EventEmitter {
       },
       (err) => {
         return new Promise((resolve, reject) => {
-          if (err.response.status === 401 && err.config && !err.config.__isRetryRequest) {
+          if (
+            err.response.status === 401 &&
+            err.config &&
+            !err.config.__isRetryRequest
+          ) {
             // if you ever get an unauthorized response, logout the user
             this.emit('onAutoLogout', 'Invalid access_token');
             this.setSession(null);
@@ -47,14 +51,33 @@ class JwtService extends FuseUtils.EventEmitter {
 
   createUser = (data) => {
     return new Promise((resolve, reject) => {
-      axios.post('http://localhost:5000/api/v1/auth/register', data).then((response) => {
-        if (response.data.user) {
-          this.setSession(response.data.access_token);
-          resolve(response.data.user);
-        } else {
-          reject(response.data.error);
-        }
-      });
+      axios
+        .post('http://localhost:5000/api/v1/auth/register', data)
+        .then((response) => {
+          if (response.data.user) {
+            this.setSession(response.data.access_token);
+            resolve(response.data.user);
+          } else {
+            reject(response.data.error);
+          }
+        })
+        .catch(function (error) {
+          if (error.response) {
+            const message = error.response.data.message;
+            let errors = [];
+            errors.push({ type: 'email', message });
+            reject(errors);
+          } else if (error.request) {
+            // The request was made but no response was received
+            // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+            // http.ClientRequest in node.js
+            console.log(error.request);
+          } else {
+            // Something happened in setting up the request that triggered an Error
+            console.log('Error', error.message);
+          }
+          // console.log(error.config);
+        });
     });
   };
 
@@ -72,6 +95,23 @@ class JwtService extends FuseUtils.EventEmitter {
           } else {
             reject(response.data.error);
           }
+        })
+        .catch(function (error) {
+          if (error.response) {
+            const message = error.response.data.message;
+            let errors = [];
+            errors.push({ type: 'login', message });
+            reject(errors);
+          } else if (error.request) {
+            // The request was made but no response was received
+            // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+            // http.ClientRequest in node.js
+            console.log(error.request);
+          } else {
+            // Something happened in setting up the request that triggered an Error
+            console.log('Error', error.message);
+          }
+          // console.log(error.config);
         });
     });
   };
