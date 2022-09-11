@@ -1,5 +1,5 @@
 import FuseUtils from '@fuse/utils/FuseUtils';
-import axios from 'axios';
+import apiService from '../apiService';
 import jwtDecode from 'jwt-decode';
 /* eslint-disable camelcase */
 
@@ -10,7 +10,7 @@ class JwtService extends FuseUtils.EventEmitter {
   }
 
   setInterceptors = () => {
-    axios.interceptors.response.use(
+    apiService.interceptors.response.use(
       (response) => {
         return response;
       },
@@ -51,8 +51,8 @@ class JwtService extends FuseUtils.EventEmitter {
 
   createUser = (data) => {
     return new Promise((resolve, reject) => {
-      axios
-        .post('http://localhost:5000/api/v1/auth/register', data)
+      apiService
+        .post('auth/register', data)
         .then((response) => {
           if (response.data.user) {
             this.setSession(response.data.access_token);
@@ -61,9 +61,9 @@ class JwtService extends FuseUtils.EventEmitter {
             reject(response.data.error);
           }
         })
-        .catch(function (error) {
+        .catch((error) => {
           if (error.response) {
-            const message = error.response.data.message;
+            const { message } = error.response.data;
             let errors = [];
             errors.push({ type: 'email', message });
             reject(errors);
@@ -83,8 +83,8 @@ class JwtService extends FuseUtils.EventEmitter {
 
   signInWithEmailAndPassword = (email, password) => {
     return new Promise((resolve, reject) => {
-      axios
-        .post('http://localhost:5000/api/v1/auth/login', {
+      apiService
+        .post('auth/login', {
           email,
           password,
         })
@@ -96,9 +96,9 @@ class JwtService extends FuseUtils.EventEmitter {
             reject(response.data.error);
           }
         })
-        .catch(function (error) {
+        .catch((error) => {
           if (error.response) {
-            const message = error.response.data.message;
+            const { message } = error.response.data;
             let errors = [];
             errors.push({ type: 'login', message });
             reject(errors);
@@ -118,8 +118,8 @@ class JwtService extends FuseUtils.EventEmitter {
 
   signInWithToken = () => {
     return new Promise((resolve, reject) => {
-      axios
-        .post('http://localhost:5000/api/v1/auth/access-token', {
+      apiService
+        .post('auth/access-token', {
           access_token: this.getAccessToken(),
         })
         .then((response) => {
@@ -139,19 +139,39 @@ class JwtService extends FuseUtils.EventEmitter {
     });
   };
 
-  updateUserData = (user) => {
-    return axios.post('http://localhost:5000/api/v1/auth/me/update-settings', {
-      user,
-    });
+  updateUserData = async (user) => {
+    const token = this.getAccessToken();
+    apiService.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    const { userSettings } = user;
+    try {
+      return await apiService.put('auth/me/update-settings', {
+        userSettings,
+      });
+    } catch (error) {
+      if (error.response) {
+        const { message } = error.response.data;
+        let errors = [];
+        errors.push({ type: 'updateSettings', message });
+        reject(errors);
+      } else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        console.log(error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log('Error', error.message);
+      }
+    }
   };
 
   setSession = (access_token) => {
     if (access_token) {
       localStorage.setItem('jwt_access_token', access_token);
-      axios.defaults.headers.common.Authorization = `Bearer ${access_token}`;
+      apiService.defaults.headers.common.Authorization = `Bearer ${access_token}`;
     } else {
       localStorage.removeItem('jwt_access_token');
-      delete axios.defaults.headers.common.Authorization;
+      delete apiService.defaults.headers.common.Authorization;
     }
   };
 
