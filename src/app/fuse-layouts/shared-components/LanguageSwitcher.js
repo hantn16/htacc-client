@@ -16,14 +16,9 @@ const languages = [
     flag: 'us',
   },
   {
-    id: 'tr',
-    title: 'Turkish',
-    flag: 'tr',
-  },
-  {
-    id: 'ar',
-    title: 'Arabic',
-    flag: 'sa',
+    id: 'vi',
+    title: 'Việt Nam',
+    flag: 'vi',
   },
 ];
 
@@ -58,7 +53,10 @@ function LanguageSwitcher(props) {
           alt={currentLanguage.title}
         />
 
-        <Typography className="mx-4 font-semibold uppercase" color="textSecondary">
+        <Typography
+          className="mx-4 font-semibold uppercase"
+          color="textSecondary"
+        >
           {currentLanguage.id}
         </Typography>
       </Button>
