@@ -19,7 +19,7 @@ const navigationConfig = [
         translate: 'DASHBOARDS',
         type: 'item',
         icon: 'dashboard',
-        url: 'apps/dashboard',
+        url: '/apps/dashboard',
       },
       {
         id: 'users',
@@ -27,7 +27,7 @@ const navigationConfig = [
         translate: 'USER_MANAGEMENT',
         type: 'item',
         icon: 'today',
-        url: 'apps/users',
+        url: '/apps/users/all',
       },
       {
         id: 'e-commerce',

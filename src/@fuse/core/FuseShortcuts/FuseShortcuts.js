@@ -47,7 +47,6 @@ function FuseShortcuts(props) {
   const shortcutItems = shortcuts
     ? shortcuts.map((id) => navigation.find((item) => item.id === id))
     : [];
-  console.log(shortcutItems);
   function addMenuClick(event) {
     setAddMenu(event.currentTarget);
   }
