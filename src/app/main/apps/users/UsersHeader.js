@@ -1,7 +1,5 @@
-import Hidden from '@material-ui/core/Hidden';
 import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
-import IconButton from '@material-ui/core/IconButton';
 import Input from '@material-ui/core/Input';
 import Paper from '@material-ui/core/Paper';
 import { ThemeProvider } from '@material-ui/core/styles';
@@ -18,7 +16,7 @@ function UsersHeader(props) {
 
   return (
     <div className="flex flex-1 items-center justify-between p-4 sm:p-24">
-      <div className="flex flex-shrink items-center sm:w-224">
+      <div className="flex flex-shrink items-center md:w-224">
         {/* <Hidden lgUp>
           <IconButton
             onClick={(ev) => {
@@ -80,7 +78,6 @@ function UsersHeader(props) {
         animate={{ opacity: 1, x: 0, transition: { delay: 0.2 } }}
       >
         <Button
-          className="whitespace-nowrap"
           variant="contained"
           color="secondary"
           onClick={(ev) => dispatch(openNewUserDialog())}

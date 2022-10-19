@@ -11,9 +11,7 @@ import UsersTable from './UsersTable';
 import {
   openEditUserDialog,
   removeUser,
-  toggleStarredUser,
   selectUsers,
-  getUsers,
 } from './store/usersSlice';
 
 function UsersList(props) {
@@ -36,15 +34,13 @@ function UsersList(props) {
           );
         },
         accessor: 'photoURL',
-        Cell: ({ row }) => {
-          return (
-            <Avatar
-              className="mx-8"
-              alt={row.original.name}
-              src={row.original.photoURL}
-            />
-          );
-        },
+        Cell: ({ row }) => (
+          <Avatar
+            className="mx-8"
+            alt={row.original.name}
+            src={row.original.photoURL}
+          />
+        ),
         className: 'justify-center',
         width: 64,
         sortable: false,
@@ -64,13 +60,12 @@ function UsersList(props) {
         Header: 'Email Verified',
         accessor: 'isEmailVerified',
         sortable: true,
-        Cell: ({ row }) => {
-          return row.original.isEmailVerified ? (
+        Cell: ({ row }) =>
+          row.original.isEmailVerified ? (
             <Icon className="text-yellow-700">star</Icon>
           ) : (
             <Icon>star_border</Icon>
-          );
-        },
+          ),
         className: 'justify-center',
       },
       {

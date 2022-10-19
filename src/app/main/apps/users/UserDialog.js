@@ -1,6 +1,6 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
 import FuseUtils from '@fuse/utils/FuseUtils';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
@@ -42,23 +42,18 @@ const defaultValues = {
  */
 const schema = yup.object().shape({
   name: yup.string().required('You must enter a name'),
-  email: yup
-    .string()
-    .required('You must enter an email')
-    .email('Invalid email address'),
+  email: yup.string().required('You must enter an email').email('Invalid email address'),
 });
 
 function UserDialog(props) {
   const dispatch = useDispatch();
   const userDialog = useSelector(({ usersApp }) => usersApp.users.userDialog);
 
-  const { control, watch, reset, handleSubmit, formState, getValues } = useForm(
-    {
-      mode: 'onChange',
-      defaultValues,
-      resolver: yupResolver(schema),
-    }
-  );
+  const { control, watch, reset, handleSubmit, formState, getValues } = useForm({
+    mode: 'onChange',
+    defaultValues,
+    resolver: yupResolver(schema),
+  });
 
   const { isValid, dirtyFields, errors } = formState;
 
@@ -236,18 +231,14 @@ function UserDialog(props) {
                     {...field}
                     className="mb-24"
                     label="PhotoUrl"
+                    disabled
                     id="photoURL"
                     error={!!errors.photoURL}
                     helperText={errors?.photoURL?.message}
                     variant="outlined"
                     fullWidth
                   />
-                  <input
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="photo"
-                    type="file"
-                  />
+                  <input accept="image/*" className="hidden" id="photo" type="file" />
                   <label htmlFor="photo">
                     <IconButton
                       color="primary"

@@ -131,16 +131,14 @@ const EnhancedTable = ({ columns, data, onRowClick }) => {
                   onClick={(ev) => onRowClick(ev, row)}
                   className="truncate cursor-pointer"
                 >
-                  {row.cells.map((cell) => {
-                    return (
-                      <TableCell
-                        {...cell.getCellProps()}
-                        className={clsx('p-4 md:p-12', cell.column.className)}
-                      >
-                        {cell.render('Cell')}
-                      </TableCell>
-                    );
-                  })}
+                  {row.cells.map((cell) => (
+                    <TableCell
+                      {...cell.getCellProps()}
+                      className={clsx('p-4 md:p-12', cell.column.className)}
+                    >
+                      {cell.render('Cell')}
+                    </TableCell>
+                  ))}
                 </TableRow>
               );
             })}
