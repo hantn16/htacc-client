@@ -8,11 +8,7 @@ import { useMemo, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import UsersMultiSelectMenu from './UsersMultiSelectMenu';
 import UsersTable from './UsersTable';
-import {
-  openEditUserDialog,
-  removeUser,
-  selectUsers,
-} from './store/usersSlice';
+import { openEditUserDialog, removeUser, selectUsers } from './store/usersSlice';
 
 function UsersList(props) {
   const dispatch = useDispatch();
@@ -28,18 +24,12 @@ function UsersList(props) {
         Header: ({ selectedFlatRows }) => {
           const selectedRowIds = selectedFlatRows.map((row) => row.original.id);
           return (
-            selectedFlatRows.length > 0 && (
-              <UsersMultiSelectMenu selectedUserIds={selectedRowIds} />
-            )
+            selectedFlatRows.length > 0 && <UsersMultiSelectMenu selectedUserIds={selectedRowIds} />
           );
         },
         accessor: 'photoURL',
         Cell: ({ row }) => (
-          <Avatar
-            className="mx-8"
-            alt={row.original.name}
-            src={row.original.photoURL}
-          />
+          <Avatar className="mx-8" alt={row.original.name} src={row.original.photoURL} />
         ),
         className: 'justify-center',
         width: 64,

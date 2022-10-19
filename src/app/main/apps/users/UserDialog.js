@@ -35,12 +35,23 @@ const defaultValues = {
   email: '',
   role: 'user',
   isEmailVerified: false,
+  password: '',
+  passwordConfirm: '',
 };
 
 /**
  * Form Validation Schema
  */
-const schema = yup.object().shape({
+const addSchema = yup.object().shape({
+  name: yup.string().required('You must enter a name'),
+  email: yup.string().required('You must enter an email').email('Invalid email address'),
+  password: yup
+    .string()
+    .required('Please enter your password.')
+    .min(8, 'Password is too short - should be 8 chars minimum.'),
+  passwordConfirm: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match'),
+});
+const editSchema = yup.object().shape({
   name: yup.string().required('You must enter a name'),
   email: yup.string().required('You must enter an email').email('Invalid email address'),
 });
@@ -48,13 +59,12 @@ const schema = yup.object().shape({
 function UserDialog(props) {
   const dispatch = useDispatch();
   const userDialog = useSelector(({ usersApp }) => usersApp.users.userDialog);
-
-  const { control, watch, reset, handleSubmit, formState, getValues } = useForm({
+  const resolver = userDialog.type === 'new' ? yupResolver(addSchema) : yupResolver(editSchema);
+  const { control, watch, reset, handleSubmit, formState, getValues, clearErrors } = useForm({
     mode: 'onChange',
     defaultValues,
-    resolver: yupResolver(schema),
+    resolver,
   });
-
   const { isValid, dirtyFields, errors } = formState;
 
   const id = watch('id');
@@ -107,9 +117,12 @@ function UserDialog(props) {
    */
   function onSubmit(data) {
     if (userDialog.type === 'new') {
+      console.log('data', data);
       dispatch(addUser(data));
     } else {
-      dispatch(updateUser({ ...userDialog.data, ...data }));
+      dispatch(
+        updateUser({ email: data.email, name: data.name, photoURL: data.photoURL, id: data.id })
+      );
     }
     closeComposeDialog();
   }
@@ -218,6 +231,56 @@ function UserDialog(props) {
               )}
             />
           </div>
+          {userDialog.type === 'new' && (
+            <div className="flex">
+              <div className="min-w-48 pt-20">
+                <Icon color="action">vpn_key</Icon>
+              </div>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    className="mb-24"
+                    label="Password"
+                    id="password"
+                    type="password"
+                    error={!!errors.password}
+                    helperText={errors?.password?.message}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                )}
+              />
+            </div>
+          )}
+          {userDialog.type === 'new' && (
+            <div className="flex">
+              <div className="min-w-48 pt-20">
+                <Icon color="action">vpn_key</Icon>
+              </div>
+              <Controller
+                control={control}
+                name="passwordConfirm"
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    className="mb-24"
+                    label="Password (Confirm)"
+                    id="passwordConfirm"
+                    type="password"
+                    error={!!errors.passwordConfirm}
+                    helperText={errors?.passwordConfirm?.message}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                )}
+              />
+            </div>
+          )}
           <div className="flex">
             <div className="min-w-48 pt-20">
               <Icon color="action">image</Icon>

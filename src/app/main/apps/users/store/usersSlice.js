@@ -1,8 +1,4 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  createEntityAdapter,
-} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import apiService from '../../../../services/apiService';
 
 export const getUsers = createAsyncThunk(
@@ -14,9 +10,11 @@ export const getUsers = createAsyncThunk(
     switch (id) {
       case 'verified': {
         response = await apiService.getUsers(`/users?isEmailVerified=true`);
+        break;
       }
       case 'unVerified': {
         response = await apiService.getUsers(`/users?isEmailVerified=false`);
+        break;
       }
       default: {
         response = await apiService.get(`/users`);
@@ -31,9 +29,8 @@ export const getUsers = createAsyncThunk(
 export const addUser = createAsyncThunk(
   'usersApp/users/addUser',
   async (user, { dispatch, getState }) => {
-    const response = await apiService.post('/users', {
-      user,
-    });
+    const { email, name, photoURL, password } = user;
+    const response = await apiService.post('/users', { email, name, photoURL, password });
     const data = await response.data;
 
     dispatch(getUsers());
@@ -45,13 +42,10 @@ export const addUser = createAsyncThunk(
 export const updateUser = createAsyncThunk(
   'usersApp/users/updateUser',
   async (user, { dispatch, getState }) => {
-    const response = await apiService.put('/users/:id', {
-      user,
-    });
+    const { email, name, photoURL } = user;
+    const response = await apiService.patch(`/users/${user.id}`, { email, name, photoURL });
     const data = await response.data;
-
     dispatch(getUsers());
-
     return data;
   }
 );
@@ -77,13 +71,10 @@ export const removeUsers = createAsyncThunk(
 export const toggleStarredUser = createAsyncThunk(
   'usersApp/users/toggleStarredUser',
   async (userId, { dispatch, getState }) => {
-    const response = await apiService.post(
-      '/api/users-app/toggle-starred-user',
-      { userId }
-    );
+    const response = await apiService.post('/api/users-app/toggle-starred-user', { userId });
     const data = await response.data;
 
-    dispatch(getUserData());
+    // dispatch(getUserData());
 
     dispatch(getUsers());
 
@@ -94,13 +85,10 @@ export const toggleStarredUser = createAsyncThunk(
 export const toggleStarredUsers = createAsyncThunk(
   'usersApp/users/toggleStarredUsers',
   async (userIds, { dispatch, getState }) => {
-    const response = await apiService.post(
-      '/api/users-app/toggle-starred-users',
-      { userIds }
-    );
+    const response = await apiService.post('/api/users-app/toggle-starred-users', { userIds });
     const data = await response.data;
 
-    dispatch(getUserData());
+    // dispatch(getUserData());
 
     dispatch(getUsers());
 
@@ -116,7 +104,7 @@ export const setUsersStarred = createAsyncThunk(
     });
     const data = await response.data;
 
-    dispatch(getUserData());
+    // dispatch(getUserData());
 
     dispatch(getUsers());
 
@@ -127,13 +115,10 @@ export const setUsersStarred = createAsyncThunk(
 export const setUsersUnstarred = createAsyncThunk(
   'usersApp/users/setUsersUnstarred',
   async (userIds, { dispatch, getState }) => {
-    const response = await apiService.post(
-      '/api/users-app/set-users-unstarred',
-      { userIds }
-    );
+    const response = await apiService.post('/api/users-app/set-users-unstarred', { userIds });
     const data = await response.data;
 
-    dispatch(getUserData());
+    // dispatch(getUserData());
 
     dispatch(getUsers());
 
@@ -143,8 +128,9 @@ export const setUsersUnstarred = createAsyncThunk(
 
 const usersAdapter = createEntityAdapter({});
 
-export const { selectAll: selectUsers, selectById: selectUsersById } =
-  usersAdapter.getSelectors((state) => state.usersApp.users);
+export const { selectAll: selectUsers, selectById: selectUsersById } = usersAdapter.getSelectors(
+  (state) => state.usersApp.users
+);
 
 const usersSlice = createSlice({
   name: 'usersApp/users',
@@ -206,10 +192,8 @@ const usersSlice = createSlice({
   extraReducers: {
     [updateUser.fulfilled]: usersAdapter.upsertOne,
     [addUser.fulfilled]: usersAdapter.addOne,
-    [removeUsers.fulfilled]: (state, action) =>
-      usersAdapter.removeMany(state, action.payload),
-    [removeUser.fulfilled]: (state, action) =>
-      usersAdapter.removeOne(state, action.payload),
+    [removeUsers.fulfilled]: (state, action) => usersAdapter.removeMany(state, action.payload),
+    [removeUser.fulfilled]: (state, action) => usersAdapter.removeOne(state, action.payload),
     [getUsers.fulfilled]: (state, action) => {
       const { data, routeParams } = action.payload;
       usersAdapter.setAll(state, data);

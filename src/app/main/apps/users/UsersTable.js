@@ -9,13 +9,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
-import {
-  useGlobalFilter,
-  usePagination,
-  useRowSelect,
-  useSortBy,
-  useTable,
-} from 'react-table';
+import { useGlobalFilter, usePagination, useRowSelect, useSortBy, useTable } from 'react-table';
 import clsx from 'clsx';
 import UsersTablePaginationActions from './UsersTablePaginationActions';
 
@@ -150,12 +144,7 @@ const EnhancedTable = ({ columns, data, onRowClick }) => {
         classes={{
           root: 'flex-shrink-0 border-t-1',
         }}
-        rowsPerPageOptions={[
-          5,
-          10,
-          25,
-          { label: 'All', value: data.length + 1 },
-        ]}
+        rowsPerPageOptions={[5, 10, 25, { label: 'All', value: data.length + 1 }]}
         colSpan={5}
         count={data.length}
         rowsPerPage={pageSize}
