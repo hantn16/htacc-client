@@ -9,7 +9,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Icon from '@material-ui/core/Icon';
 import IconButton from '@material-ui/core/IconButton';
-import PhotoCamera from '@material-ui/icons/PhotoCamera';
 import TextField from '@material-ui/core/TextField';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -21,7 +20,6 @@ import _ from '@lodash';
 import * as yup from 'yup';
 import { closeDialog, openDialog } from 'app/store/fuse/dialogSlice';
 import { DialogTitle, DialogContentText } from '@material-ui/core';
-import ConfirmationDialogRaw from 'app/shared-components/ConfirmDialog';
 import {
   removeUser,
   updateUser,
@@ -62,7 +60,7 @@ function UserDialog(props) {
   const dispatch = useDispatch();
   const userDialog = useSelector(({ usersApp }) => usersApp.users.userDialog);
   const resolver = userDialog.type === 'new' ? yupResolver(addSchema) : yupResolver(editSchema);
-  const { control, watch, reset, handleSubmit, formState, getValues, clearErrors } = useForm({
+  const { control, watch, reset, handleSubmit, formState, register, setValue } = useForm({
     mode: 'onChange',
     defaultValues,
     resolver,
@@ -72,6 +70,12 @@ function UserDialog(props) {
   const id = watch('id');
   const name = watch('name');
   const photoURL = watch('photoURL');
+
+  useEffect(() => {
+    return () => {
+      URL.revokeObjectURL(photoURL);
+    };
+  }, [photoURL]);
 
   /**
    * Initialize Dialog with Data
@@ -118,8 +122,8 @@ function UserDialog(props) {
    * Form Submit
    */
   function onSubmit(data) {
+    console.log('data', data);
     if (userDialog.type === 'new') {
-      console.log('data', data);
       dispatch(addUser(data));
     } else {
       dispatch(
@@ -161,7 +165,15 @@ function UserDialog(props) {
     dispatch(closeDialog());
     closeComposeDialog();
   }
-
+  /**
+   * Change Avatar
+   */
+  const handleChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setValue('photoURL', URL.createObjectURL(file), { shouldDirty: true });
+    }
+  };
   return (
     <Dialog
       classes={{
@@ -172,26 +184,37 @@ function UserDialog(props) {
       fullWidth
       maxWidth="xs"
     >
-      <AppBar position="static" elevation={0}>
-        <Toolbar className="flex w-full">
-          <Typography variant="subtitle1" color="inherit">
-            {userDialog.type === 'new' ? 'New User' : 'Edit User'}
-          </Typography>
-        </Toolbar>
-        <div className="flex flex-col items-center justify-center pb-24">
-          <Avatar className="w-96 h-96" alt="user avatar" src={photoURL} />
-          {userDialog.type === 'edit' && (
-            <Typography variant="h6" color="inherit" className="pt-8">
-              {name}
-            </Typography>
-          )}
-        </div>
-      </AppBar>
       <form
         noValidate
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col md:overflow-hidden"
       >
+        <AppBar position="static" elevation={0}>
+          <Toolbar className="flex w-full">
+            <Typography variant="subtitle1" color="inherit">
+              {userDialog.type === 'new' ? 'New User' : 'Edit User'}
+            </Typography>
+          </Toolbar>
+          <div className="flex flex-col items-center justify-center pb-24">
+            <label htmlFor="profilePhoto">
+              <input
+                accept="image/*"
+                id="profilePhoto"
+                name="photoURL"
+                type="file"
+                className="hidden"
+                onChange={handleChange}
+                {...register}
+              />
+              <Avatar className="w-96 h-96 cursor-pointer" alt="user avatar" src={photoURL} />
+            </label>
+            {userDialog.type === 'edit' && (
+              <Typography variant="h6" color="inherit" className="pt-8">
+                {name}
+              </Typography>
+            )}
+          </div>
+        </AppBar>
         <DialogContent classes={{ root: 'p-24' }}>
           <div className="flex">
             <div className="min-w-48 pt-20">
@@ -308,63 +331,6 @@ function UserDialog(props) {
               />
             </div>
           )}
-          <div className="flex">
-            <div className="min-w-48 pt-20">
-              <Icon color="action">image</Icon>
-            </div>
-            <Controller
-              control={control}
-              name="photoURL"
-              render={({ field }) => (
-                <>
-                  <TextField
-                    {...field}
-                    className="mb-24"
-                    label="PhotoUrl"
-                    disabled
-                    id="photoURL"
-                    error={!!errors.photoURL}
-                    helperText={errors?.photoURL?.message}
-                    variant="outlined"
-                    fullWidth
-                  />
-                  <input accept="image/*" className="hidden" id="photo" type="file" />
-                  <label htmlFor="photo">
-                    <IconButton
-                      color="primary"
-                      style={{ cursor: 'pointer' }}
-                      aria-label="upload picture"
-                      component="span"
-                    >
-                      <PhotoCamera />
-                    </IconButton>
-                  </label>
-                </>
-              )}
-            />
-          </div>
-
-          {/* <div className="flex">
-            <div className="min-w-48 pt-20">
-              <Icon color="action">note</Icon>
-            </div>
-            <Controller
-              control={control}
-              name="notes"
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  className="mb-24"
-                  label="Notes"
-                  id="notes"
-                  variant="outlined"
-                  multiline
-                  rows={5}
-                  fullWidth
-                />
-              )}
-            />
-          </div> */}
         </DialogContent>
 
         {userDialog.type === 'new' ? (
