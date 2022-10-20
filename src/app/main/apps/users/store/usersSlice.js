@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
+import { showMessage } from 'app/store/fuse/messageSlice';
 import apiService from '../../../../services/apiService';
 
 export const getUsers = createAsyncThunk(
@@ -34,27 +35,53 @@ export const addUser = createAsyncThunk(
     const data = await response.data;
 
     dispatch(getUsers());
-
+    dispatch(
+      showMessage({
+        message: 'Add user successfully',
+        variant: 'success',
+      })
+    );
     return data;
   }
 );
 
 export const updateUser = createAsyncThunk(
   'usersApp/users/updateUser',
-  async (user, { dispatch, getState }) => {
-    const { email, name, photoURL } = user;
-    const response = await apiService.patch(`/users/${user.id}`, { email, name, photoURL });
-    const data = await response.data;
-    dispatch(getUsers());
-    return data;
+  async (user, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const { email, name, photoURL } = user;
+      const response = await apiService.patch(`/users/${user.id}`, { email, name, photoURL });
+      const data = await response.data;
+      dispatch(getUsers());
+      dispatch(
+        showMessage({
+          message: 'Update user successfully',
+          variant: 'success',
+        })
+      );
+      return data;
+    } catch (error) {
+      dispatch(
+        showMessage({
+          message: error.response.data.message,
+          variant: 'error',
+        })
+      );
+      return rejectWithValue(error.response.data.message);
+    }
   }
 );
 
 export const removeUser = createAsyncThunk(
   'usersApp/users/removeUser',
   async (userId, { dispatch, getState }) => {
-    await apiService.delete('/users/:userId', { userId });
-
+    await apiService.delete(`/users/${userId}`);
+    dispatch(
+      showMessage({
+        message: 'Delete user successfully',
+        variant: 'success',
+      })
+    );
     return userId;
   }
 );
@@ -62,8 +89,13 @@ export const removeUser = createAsyncThunk(
 export const removeUsers = createAsyncThunk(
   'usersApp/users/removeUsers',
   async (userIds, { dispatch, getState }) => {
-    await apiService.post('/users/:userIds', { userIds });
-
+    await apiService.delete('/users', { data: { userIds } });
+    dispatch(
+      showMessage({
+        message: 'Delete users successfully',
+        variant: 'success',
+      })
+    );
     return userIds;
   }
 );

@@ -1,11 +1,14 @@
 import { motion } from 'framer-motion';
 import FuseUtils from '@fuse/utils';
 import Avatar from '@material-ui/core/Avatar';
+import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import { useMemo, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { closeDialog, openDialog } from 'app/store/fuse/dialogSlice';
+import { DialogTitle, DialogContentText, DialogContent, DialogActions } from '@material-ui/core';
 import UsersMultiSelectMenu from './UsersMultiSelectMenu';
 import UsersTable from './UsersTable';
 import { openEditUserDialog, removeUser, selectUsers } from './store/usersSlice';
@@ -18,6 +21,37 @@ function UsersList(props) {
 
   const [filteredData, setFilteredData] = useState(null);
 
+  const confirmRemove = (id) => {
+    dispatch(
+      openDialog({
+        children: (
+          <>
+            <DialogTitle id="alert-dialog-title">Delete User</DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                You are about to delete this user. Are you sure?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => dispatch(closeDialog())} color="primary">
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  dispatch(removeUser(id));
+                  dispatch(closeDialog());
+                }}
+                color="primary"
+                autoFocus
+              >
+                Ok
+              </Button>
+            </DialogActions>
+          </>
+        ),
+      })
+    );
+  };
   const columns = useMemo(
     () => [
       {
@@ -47,14 +81,19 @@ function UsersList(props) {
         sortable: true,
       },
       {
+        Header: 'Role',
+        accessor: 'role',
+        sortable: true,
+      },
+      {
         Header: 'Email Verified',
         accessor: 'isEmailVerified',
         sortable: true,
         Cell: ({ row }) =>
           row.original.isEmailVerified ? (
-            <Icon className="text-yellow-700">star</Icon>
+            <Icon className="text-green-700">verified_user</Icon>
           ) : (
-            <Icon>star_border</Icon>
+            <Icon className="text-red-700">highlight_off</Icon>
           ),
         className: 'justify-center',
       },
@@ -67,7 +106,7 @@ function UsersList(props) {
             <IconButton
               onClick={(ev) => {
                 ev.stopPropagation();
-                dispatch(removeUser(row.original.id));
+                confirmRemove(row.original.id);
               }}
             >
               <Icon>delete</Icon>
@@ -76,7 +115,7 @@ function UsersList(props) {
         ),
       },
     ],
-    [dispatch]
+    []
   );
 
   useEffect(() => {

@@ -19,7 +19,9 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import _ from '@lodash';
 import * as yup from 'yup';
-
+import { closeDialog, openDialog } from 'app/store/fuse/dialogSlice';
+import { DialogTitle, DialogContentText } from '@material-ui/core';
+import ConfirmationDialogRaw from 'app/shared-components/ConfirmDialog';
 import {
   removeUser,
   updateUser,
@@ -126,12 +128,37 @@ function UserDialog(props) {
     }
     closeComposeDialog();
   }
+  function showConfirmDialog() {
+    dispatch(
+      openDialog({
+        children: (
+          <>
+            <DialogTitle id="alert-dialog-title">Delete User</DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                You are about to delete this user. Are you sure?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => dispatch(closeDialog())} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleRemove} color="primary" autoFocus>
+                Ok
+              </Button>
+            </DialogActions>
+          </>
+        ),
+      })
+    );
+  }
 
   /**
    * Remove Event
    */
   function handleRemove() {
     dispatch(removeUser(id));
+    dispatch(closeDialog());
     closeComposeDialog();
   }
 
@@ -365,7 +392,7 @@ function UserDialog(props) {
                 Save
               </Button>
             </div>
-            <IconButton onClick={handleRemove}>
+            <IconButton onClick={showConfirmDialog}>
               <Icon>delete</Icon>
             </IconButton>
           </DialogActions>
