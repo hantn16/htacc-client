@@ -50,7 +50,7 @@ export const updateUser = createAsyncThunk(
   async (user, { dispatch, getState, rejectWithValue }) => {
     try {
       const { email, name, photoURL } = user;
-      const response = await apiService.patch(`/users/${user.id}`, { email, name, photoURL });
+      const response = await apiService.patch(`/users/me`, { email, name, photoURL });
       const data = await response.data;
       dispatch(getUsers());
       dispatch(

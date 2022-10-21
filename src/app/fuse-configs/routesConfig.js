@@ -8,13 +8,7 @@ import RegisterConfig from 'app/main/register/RegisterConfig';
 import appsConfigs from 'app/main/apps/appsConfigs';
 import pagesConfigs from 'app/main/pages/pagesConfigs';
 
-const routeConfigs = [
-  ...appsConfigs,
-  ...pagesConfigs,
-  ExampleConfig,
-  LoginConfig,
-  RegisterConfig,
-];
+const routeConfigs = [...appsConfigs, ...pagesConfigs, ExampleConfig, LoginConfig, RegisterConfig];
 
 const routes = [
   // if you want to make whole app auth protected by default change defaultAuth for example:
