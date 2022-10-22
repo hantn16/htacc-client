@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { updateUserData } from 'app/auth/store/userSlice';
+import { setUserData } from 'app/auth/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import apiService from '../../../../services/apiService';
 
@@ -76,11 +76,9 @@ export const updateProfile = createAsyncThunk(
   'usersApp/users/updateUser',
   async (user, { dispatch, getState, rejectWithValue }) => {
     try {
-      console.log(typeof user);
       const response = await apiService.patch(`/users/me`, user);
       const data = await response.data;
-
-      dispatch(updateUserData(data));
+      dispatch(setUserData(data));
       dispatch(
         showMessage({
           message: 'Update profile successfully',
