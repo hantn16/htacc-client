@@ -1,16 +1,13 @@
-import FuseUtils from '@fuse/utils/FuseUtils';
 import { yupResolver } from '@hookform/resolvers/yup';
 import AppBar from '@material-ui/core/AppBar';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Icon from '@material-ui/core/Icon';
 import TextField from '@material-ui/core/TextField';
-import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import { DialogTitle, DialogContentText, DialogContent, DialogActions } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import clsx from 'clsx';
 import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -19,14 +16,8 @@ import * as yup from 'yup';
 
 import FusePageCarded from '@fuse/core/FusePageCarded';
 import { closeDialog, openDialog } from 'app/store/fuse/dialogSlice';
-import { DialogTitle, DialogContentText, DialogContent, DialogActions } from '@material-ui/core';
-import {
-  removeUser,
-  updateUser,
-  addUser,
-  closeNewUserDialog,
-  closeEditUserDialog,
-} from '../../apps/users/store/usersSlice';
+
+import { updateProfile } from '../../apps/users/store/usersSlice';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -98,9 +89,13 @@ function Profile(props) {
     showConfirmDialog(data);
   }
   function handleOk(data) {
-    dispatch(
-      updateUser({ email: data.email, name: data.name, photoURL: data.photoURL, id: data.id })
-    );
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('avatar', data.avatar);
+    console.log(formData);
+    dispatch(updateProfile(formData));
+    dispatch(closeDialog());
+    setEditMode(false);
   }
 
   function showConfirmDialog(data) {
@@ -118,7 +113,7 @@ function Profile(props) {
               <Button onClick={() => dispatch(closeDialog())} color="primary">
                 Cancel
               </Button>
-              <Button onClick={handleOk(data)} color="primary" autoFocus>
+              <Button onClick={(e) => handleOk(data)} color="primary" autoFocus>
                 Ok
               </Button>
             </DialogActions>
@@ -136,6 +131,8 @@ function Profile(props) {
     if (file) {
       setValue('photoURL', URL.createObjectURL(file), { shouldDirty: true });
     }
+    setValue('avatar', file, { shouldDirty: true });
+    // onChange([newImage, ...value]);
   };
   return (
     <FusePageCarded
@@ -148,14 +145,21 @@ function Profile(props) {
       //   </div>
       // }
       contentToolbar={
-        <div className="px-24">
-          <h4>{`${user.name}'s Profile`}</h4>
+        <div className="flex flex-1 w-full justify-between px-24">
+          <div>
+            <h4>{`${user.name}'s Profile`}</h4>
+          </div>
+          <div className="flex">
+            {!editMode && (
+              <Button variant="contained" color="secondary" onClick={() => setEditMode(true)}>
+                Edit profile
+              </Button>
+            )}
+          </div>
         </div>
       }
       content={
         <div className="p-24">
-          <h4>Content</h4>
-          <br />
           <form
             noValidate
             onSubmit={handleSubmit(onSubmit)}
@@ -167,7 +171,7 @@ function Profile(props) {
                   <input
                     accept="image/*"
                     id="profilePhoto"
-                    name="photoURL"
+                    name="avatar"
                     type="file"
                     className="hidden"
                     disabled={!editMode}
@@ -180,13 +184,6 @@ function Profile(props) {
                   <Typography variant="h6" color="inherit" className="pt-8">
                     {`${user.name} - ${user.role}`}
                   </Typography>
-                </div>
-                <div className="flex">
-                  {!editMode && (
-                    <Button variant="contained" color="secondary" onClick={() => setEditMode(true)}>
-                      Edit profile
-                    </Button>
-                  )}
                 </div>
               </div>
             </AppBar>
@@ -233,7 +230,7 @@ function Profile(props) {
                       variant="outlined"
                       fullWidth
                       required
-                      disabled={!editMode}
+                      disabled
                     />
                   )}
                 />

@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
+import { updateUserData } from 'app/auth/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import apiService from '../../../../services/apiService';
 
@@ -50,12 +51,39 @@ export const updateUser = createAsyncThunk(
   async (user, { dispatch, getState, rejectWithValue }) => {
     try {
       const { email, name, photoURL } = user;
-      const response = await apiService.patch(`/users/me`, { email, name, photoURL });
+      const response = await apiService.patch(`/users/${user.id}`, { email, name, photoURL });
       const data = await response.data;
       dispatch(getUsers());
       dispatch(
         showMessage({
           message: 'Update user successfully',
+          variant: 'success',
+        })
+      );
+      return data;
+    } catch (error) {
+      dispatch(
+        showMessage({
+          message: error.response.data.message,
+          variant: 'error',
+        })
+      );
+      return rejectWithValue(error.response.data.message);
+    }
+  }
+);
+export const updateProfile = createAsyncThunk(
+  'usersApp/users/updateUser',
+  async (user, { dispatch, getState, rejectWithValue }) => {
+    try {
+      console.log(typeof user);
+      const response = await apiService.patch(`/users/me`, user);
+      const data = await response.data;
+
+      dispatch(updateUserData(data));
+      dispatch(
+        showMessage({
+          message: 'Update profile successfully',
           variant: 'success',
         })
       );
@@ -223,6 +251,7 @@ const usersSlice = createSlice({
   },
   extraReducers: {
     [updateUser.fulfilled]: usersAdapter.upsertOne,
+    [updateProfile.fulfilled]: usersAdapter.upsertOne,
     [addUser.fulfilled]: usersAdapter.addOne,
     [removeUsers.fulfilled]: (state, action) => usersAdapter.removeMany(state, action.payload),
     [removeUser.fulfilled]: (state, action) => usersAdapter.removeOne(state, action.payload),
