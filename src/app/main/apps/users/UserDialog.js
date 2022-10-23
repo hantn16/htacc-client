@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import FuseUtils from '@fuse/utils/FuseUtils';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -7,19 +8,19 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import { DialogTitle, DialogContentText } from '@material-ui/core';
 import Icon from '@material-ui/core/Icon';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 
 import _ from '@lodash';
 import * as yup from 'yup';
 import { closeDialog, openDialog } from 'app/store/fuse/dialogSlice';
-import { DialogTitle, DialogContentText } from '@material-ui/core';
 import {
   removeUser,
   updateUser,
@@ -28,37 +29,59 @@ import {
   closeEditUserDialog,
 } from './store/usersSlice';
 
-const defaultValues = {
-  id: '',
-  name: '',
-  photoURL: 'assets/images/avatars/profile.jpg',
-  email: '',
-  role: 'user',
-  isEmailVerified: false,
-  password: '',
-  passwordConfirm: '',
-};
-
-/**
- * Form Validation Schema
- */
-const addSchema = yup.object().shape({
-  name: yup.string().required('You must enter a name'),
-  email: yup.string().required('You must enter an email').email('Invalid email address'),
-  password: yup
-    .string()
-    .required('Please enter your password.')
-    .min(8, 'Password is too short - should be 8 chars minimum.'),
-  passwordConfirm: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match'),
-});
-const editSchema = yup.object().shape({
-  name: yup.string().required('You must enter a name'),
-  email: yup.string().required('You must enter an email').email('Invalid email address'),
-});
-
 function UserDialog(props) {
   const dispatch = useDispatch();
   const userDialog = useSelector(({ usersApp }) => usersApp.users.userDialog);
+  const users = useSelector(({ usersApp }) => {
+    const listId = Object.keys(usersApp.users.entities);
+    return listId.map((id) => usersApp.users.entities[id]);
+  });
+  const listEmailToCheckExists = users
+    .map((user) => user.email)
+    .filter((email) => {
+      if (userDialog.data == null) {
+        return true;
+      }
+      return email !== userDialog.data.email;
+    });
+  const defaultValues = {
+    id: '',
+    name: '',
+    photoURL: 'assets/images/avatars/profile.jpg',
+    email: '',
+    role: 'user',
+    isEmailVerified: false,
+    password: '',
+    passwordConfirm: '',
+    checkEmail: true,
+  };
+  /**
+   * Form Validation Schema
+   */
+  const addSchema = yup.object().shape({
+    name: yup.string().required('You must enter a name'),
+    email: yup.string().required('You must enter an email').email('Invalid email address'),
+    password: yup
+      .string()
+      .required('Please enter your password.')
+      .min(8, 'Password is too short - should be 8 chars minimum.'),
+    passwordConfirm: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match'),
+  });
+  const editSchema = yup.object().shape({
+    name: yup.string().required('You must enter a name'),
+    checkEmail: yup.boolean(),
+    email: yup
+      .string()
+      .required('You must enter an email')
+      .email('Invalid email address')
+      .test({
+        message: 'Email already exist',
+        test: (value) => {
+          return !listEmailToCheckExists.includes(value);
+        },
+      }),
+  });
+
   const resolver = userDialog.type === 'new' ? yupResolver(addSchema) : yupResolver(editSchema);
   const { control, watch, reset, handleSubmit, formState, register, setValue } = useForm({
     mode: 'onChange',
@@ -69,6 +92,7 @@ function UserDialog(props) {
 
   const id = watch('id');
   const name = watch('name');
+  const email = watch('email');
   const photoURL = watch('photoURL');
 
   useEffect(() => {
@@ -165,15 +189,7 @@ function UserDialog(props) {
     dispatch(closeDialog());
     closeComposeDialog();
   }
-  /**
-   * Change Avatar
-   */
-  const handleChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setValue('photoURL', URL.createObjectURL(file), { shouldDirty: true });
-    }
-  };
+
   return (
     <Dialog
       classes={{
@@ -196,18 +212,7 @@ function UserDialog(props) {
             </Typography>
           </Toolbar>
           <div className="flex flex-col items-center justify-center pb-24">
-            <label htmlFor="profilePhoto">
-              <input
-                accept="image/*"
-                id="profilePhoto"
-                name="photoURL"
-                type="file"
-                className="hidden"
-                onChange={handleChange}
-                {...register}
-              />
-              <Avatar className="w-96 h-96 cursor-pointer" alt="user avatar" src={photoURL} />
-            </label>
+            <Avatar className="w-96 h-96 cursor-pointer" alt="user avatar" src={photoURL} />
             {userDialog.type === 'edit' && (
               <Typography variant="h6" color="inherit" className="pt-8">
                 {name}
@@ -216,49 +221,6 @@ function UserDialog(props) {
           </div>
         </AppBar>
         <DialogContent classes={{ root: 'p-24' }}>
-          <div className="flex">
-            <div className="min-w-48 pt-20">
-              <Icon color="action">account_circle</Icon>
-            </div>
-            <Controller
-              control={control}
-              name="name"
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  className="mb-24"
-                  label="Name"
-                  id="name"
-                  error={!!errors.name}
-                  helperText={errors?.name?.message}
-                  variant="outlined"
-                  required
-                  fullWidth
-                />
-              )}
-            />
-          </div>
-          {/* 
-          <div className="flex">
-            <div className="min-w-48 pt-20">
-              <Icon color="action">phone</Icon>
-            </div>
-            <Controller
-              control={control}
-              name="phone"
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  className="mb-24"
-                  label="Phone"
-                  id="phone"
-                  variant="outlined"
-                  fullWidth
-                />
-              )}
-            />
-          </div> */}
-
           <div className="flex">
             <div className="min-w-48 pt-20">
               <Icon color="action">email</Icon>
@@ -281,6 +243,29 @@ function UserDialog(props) {
               )}
             />
           </div>
+          <div className="flex">
+            <div className="min-w-48 pt-20">
+              <Icon color="action">account_circle</Icon>
+            </div>
+            <Controller
+              control={control}
+              name="name"
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  className="mb-24"
+                  label="Name"
+                  id="name"
+                  error={!!errors.name}
+                  helperText={errors?.name?.message}
+                  variant="outlined"
+                  required
+                  fullWidth
+                />
+              )}
+            />
+          </div>
+
           {userDialog.type === 'new' && (
             <div className="flex">
               <div className="min-w-48 pt-20">

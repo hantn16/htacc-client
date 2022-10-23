@@ -1,6 +1,7 @@
 import FuseUtils from '@fuse/utils/FuseUtils';
-import apiService from '../apiService';
 import jwtDecode from 'jwt-decode';
+
+import apiService from '../apiService';
 /* eslint-disable camelcase */
 
 class JwtService extends FuseUtils.EventEmitter {
@@ -16,11 +17,7 @@ class JwtService extends FuseUtils.EventEmitter {
       },
       (err) => {
         return new Promise((resolve, reject) => {
-          if (
-            err.response.status === 401 &&
-            err.config &&
-            !err.config.__isRetryRequest
-          ) {
+          if (err.response.status === 401 && err.config && !err.config.__isRetryRequest) {
             // if you ever get an unauthorized response, logout the user
             this.emit('onAutoLogout', 'Invalid access_token');
             this.setSession(null);
@@ -64,7 +61,7 @@ class JwtService extends FuseUtils.EventEmitter {
         .catch((error) => {
           if (error.response) {
             const { message } = error.response.data;
-            let errors = [];
+            const errors = [];
             errors.push({ type: 'email', message });
             reject(errors);
           } else if (error.request) {
@@ -99,7 +96,7 @@ class JwtService extends FuseUtils.EventEmitter {
         .catch((error) => {
           if (error.response) {
             const { message } = error.response.data;
-            let errors = [];
+            const errors = [];
             errors.push({ type: 'login', message });
             reject(errors);
           } else if (error.request) {
@@ -141,7 +138,7 @@ class JwtService extends FuseUtils.EventEmitter {
 
   updateUserData = async (user) => {
     const token = this.getAccessToken();
-    apiService.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    apiService.defaults.headers.common.Authorization = `Bearer ${token}`;
     const { userSettings } = user;
     try {
       return await apiService.put('auth/me/update-settings', {
@@ -150,9 +147,8 @@ class JwtService extends FuseUtils.EventEmitter {
     } catch (error) {
       if (error.response) {
         const { message } = error.response.data;
-        let errors = [];
+        const errors = [];
         errors.push({ type: 'updateSettings', message });
-        reject(errors);
       } else if (error.request) {
         // The request was made but no response was received
         // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
@@ -162,6 +158,7 @@ class JwtService extends FuseUtils.EventEmitter {
         // Something happened in setting up the request that triggered an Error
         console.log('Error', error.message);
       }
+      return null;
     }
   };
 
