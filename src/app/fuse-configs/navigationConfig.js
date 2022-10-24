@@ -30,6 +30,14 @@ const navigationConfig = [
         url: '/apps/users/all',
       },
       {
+        id: 'accounts',
+        title: 'Accounts Management',
+        translate: 'ACCOUNT_MANAGEMENT',
+        type: 'item',
+        icon: 'vpn_key',
+        url: '/apps/accounts/all',
+      },
+      {
         id: 'e-commerce',
         title: 'E-Commerce',
         translate: 'ECOMMERCE',
